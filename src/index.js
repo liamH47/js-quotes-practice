@@ -77,9 +77,54 @@ const postNewAuthor = (quote, author) => {
     })
 }
 
+const clickHandler = () => {
+    document.addEventListener('click', e => {
+         if (e.target.matches('.btn-danger')) {
+            const deleteBtn = e.target
+            const quoteCard = deleteBtn.closest('li')
+            deleteQuote(quoteCard) 
+        } else if (e.target.matches('.btn-success')) {
+            addLike(e)
+        }
+    })
+}
 
+const addLike = e => {
+    const li = e.target.closest('li')
+    const quoteId = parseInt(li.dataset.id)
+    const span = e.target.firstElementChild
+    const newLikeTotal = parseint(span.textContent) + 1
+}
+
+const data = {
+    quoteId: quoteId
+    // createdt: Math.floor(Date.now()/1000)
+}
+
+const config = {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+}
+
+fetch('http://localhost/3000/likes', config)
+.then(response => response.json())
+.then(() => {
+    span.textContent = newLikeTotal
+})
+
+const deleteQuote = quoteCard => {
+    const id = quoteCard.dataset.id
+    fetch('http://localhost:/3000/quotes/${id}', {
+        method: 'DELETE',
+    })
+    .then(response => response.json())
+    .then(whatever => quoteCard.remove())
+}
 
 //render functions
-
+clickHandler()
 submitHandler()
 initialize()
