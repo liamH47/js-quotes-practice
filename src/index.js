@@ -1,47 +1,40 @@
 // Dom Elements
 const quoteForm = document.querySelector("#new-quote-form")
 const quoteList = document.querySelector("#quote-list")
-//Event Listeners
-quoteForm.addEventListener("submit", handleQuoteFormSubmit)
 
-//Create Quote 
-function handleQuoteFormSubmit(event) {
-    event.preventDefault()
-    //step 1, get user input from form fields
-    const quoteObj = {
-        quote: event.target.quote.value,
-        author: event.target.author.value
-    }
 
-    renderOneQuote(quoteObj)
-    event.target.reset()
+function renderAllQuotes(quoteArray) {
+    quoteArray.forEach(quote => {
+        renderOneQuote(quote, quote.likes.length)
+    })
 }
 
-
-
-//render functions
-
-function renderOneQuote(quoteObj) {
-    const card = document.createElement("li")
-    card.className = "quote-card"
-    card.innerHTML = `
-    <li class='quote-card'>
-    <blockquote class="blockquote">
-      <p class="mb-0">${quoteObj.quote}</p>
-      <footer class="blockquote-footer">${quoteObj.author}</footer>
-      <br>
-      <button class='btn-success'>Likes: <span>0</span></button>
-      <button class='btn-danger'>Delete</button>
-    </blockquote>
-  </li>
+function renderOneQuote(quoteObj, likes) {
+    const author = quoteObj.author
+    const quote = quoteObj.quote
+    const li = createLi(quoteObj.id)
+    li.innerHTML = `
+        <blockquote class="blockquote">
+            <p class="mb-0">
+                ${quote}
+            </p>
+            <footer class="blockquote-footer">
+                ${author}
+            </footer>
+                <br>
+            <button class='btn-success'>Likes: <span>${likes}</span></button>
+            <button class='btn-danger'>Delete</button>
+        </blockquote>
     `
-    quoteList.append(card)
+    quoteList.append(li)
 }
 
-function renderAllQuotes(quoteData) {
-    quoteData.forEach(renderOneQuote)
+const createLi = id => {
+    let li = document.createElement('li')
+    li.className = 'quote-card'
+    li.dataset.id = id
+    return li
 }
-
 
 function initialize() {
     fetch('http://localhost:3000/quotes?_embed=likes')
@@ -51,4 +44,42 @@ function initialize() {
         renderAllQuotes(quoteArray)
     })
 }   
+
+//Create Quote 
+const submitHandler = () => {
+    quoteForm.addEventListener('submit', e => {
+        e.preventDefault()
+        const quote = e.target.quote.value
+        const author = e.target.author.value
+        console.log(quote, author)
+        postNewAuthor(quote, author)
+        e.target.reset()
+    })
+}
+    
+
+const postNewAuthor = (quote, author) => {
+    fetch('http://localhost:3000/quotes', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            quote: quote,
+            author: author,
+            created_at: Date.now()
+        })
+    })
+    .then(response => response.json())
+    .then(obj => {
+        renderOneQuote(obj, 0)
+    })
+}
+
+
+
+//render functions
+
+submitHandler()
 initialize()
